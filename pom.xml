@@ -45,12 +45,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <modules>
-        <module>config-server</module>
-        <module>config-client1</module>
-        <module>config-client2</module>
-
-
-    </modules>
 </project>

@@ -1,0 +1,80 @@
+version: '3'
+services:
+    rabbitmq:
+        container_name: rabbitmq
+        image: rabbitmq:management
+        ports:
+            - 5672:5672
+            - 15672:15672
+#        environment:
+#              RABBITMQ_DEFAULT_PASS: admin
+#              RABBITMQ_DEFAULT_USER: admin
+#              RABBITMQ_DEFAULT_VHOST: vhost
+    config-server:
+        container_name: config-server
+        build:
+            context: .
+            dockerfile: ./config-server/Dockerfile
+        image: config-server:latest
+        expose:
+            - 8888
+        ports:
+            - 8888:8888
+        depends_on:
+            - rabbitmq
+        networks:
+            - config-network
+        links:
+           - rabbitmq
+#        volumes:
+#            - config-repo:/var/lib/config-repo
+    config-client1:
+        container_name: config-client1
+        build:
+            context: .
+            dockerfile: ./config-client1/Dockerfile
+        image: config-client1:latest
+        environment:
+            RABBIT_HOST: rabbitmq
+            #SPRING_APPLICATION_JSON: '{"spring": {"cloud": {"config": {"uri": "http://co:8888"}}}}'
+        entrypoint: /opt/config-client1-entrypoint.sh
+        expose:
+            - 8081
+        ports:
+            - 8081:8081
+        networks:
+            - config-network
+        links:
+            - config-server:config-server
+            - rabbitmq
+        depends_on:
+            - config-server
+            - rabbitmq
+    config-client2:
+        container_name: config-client2
+        build:
+            context: .
+            dockerfile: ./config-client2/Dockerfile
+        image: config-client2:latest
+        environment:
+            RABBIT_HOST: rabbitmq
+            #SPRING_APPLICATION_JSON: '{"spring": {"cloud": {"config": {"uri": "http://config-server:8888"}}}}'
+        entrypoint: /opt/config-client2-entrypoint.sh
+        expose:
+            - 8082
+        ports:
+            - 8082:8082
+        networks:
+            - config-network
+        links:
+            - config-server:config-server
+            - rabbitmq
+        depends_on:
+            - config-server
+            - rabbitmq
+networks:
+    config-network:
+        driver: bridge
+#volumes:
+#    config-repo:
+#        external: true
