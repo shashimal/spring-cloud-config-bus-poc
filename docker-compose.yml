@@ -75,6 +75,3 @@ services:
 networks:
     config-network:
         driver: bridge
-#volumes:
-#    config-repo:
-#        external: true
